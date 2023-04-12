@@ -5,6 +5,7 @@
 //  Created by Gilang Aditya Rahman on 11/04/23.
 //
 
+import Firebase
 import UIKit
 
 class MainTabController: UITabBarController {
@@ -24,9 +25,42 @@ class MainTabController: UITabBarController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
+    view.backgroundColor = .twitterBlue
+    //logUserOut()
+    authenticateUserAndConfigureUI()
+  }
 
-    configureViewController()
-    configureUI()
+//  override func viewDidAppear(_ animated: Bool) {
+//    super.viewDidAppear(animated)
+//    authenticateUserAndConfigureUI()
+//  }
+
+  // MARK: - API
+
+  func fetchUser() {
+    UserService.shared.fetchUser()
+  }
+
+  func authenticateUserAndConfigureUI() {
+    if Auth.auth().currentUser == nil {
+      DispatchQueue.main.async {
+        let nav = UINavigationController(rootViewController: LoginController())
+        nav.modalPresentationStyle = .fullScreen
+        self.present(nav, animated: true, completion: nil)
+      }
+    } else {
+      configureViewController()
+      configureUI()
+      fetchUser()
+    }
+  }
+
+  func logUserOut() {
+    do {
+      try Auth.auth().signOut()
+    } catch {
+      print("ERROR: \(error.localizedDescription)")
+    }
   }
 
   // MARK: - Selectors
@@ -48,8 +82,8 @@ class MainTabController: UITabBarController {
     let appearance = UITabBarAppearance()
     appearance.configureWithOpaqueBackground()
     appearance.backgroundColor = .systemBackground
-    tabBar.standardAppearance = appearance
-    tabBar.isTranslucent = true
+    // tabBar.standardAppearance = appearance
+    // tabBar.isTranslucent = true
     if #available(iOS 15.0, *) {
       tabBar.scrollEdgeAppearance = appearance
     } else {
@@ -72,8 +106,9 @@ class MainTabController: UITabBarController {
     nav.tabBarItem.image = image
     let appearance = UINavigationBarAppearance()
     appearance.configureWithOpaqueBackground()
-    nav.navigationBar.standardAppearance = appearance
+    // nav.navigationBar.standardAppearance = appearance
     nav.navigationBar.scrollEdgeAppearance = appearance
+    
 
     return nav
   }
