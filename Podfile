@@ -10,6 +10,7 @@ target 'twitter-clone' do
   pod 'Firebase/Database'
   pod 'Firebase/Storage'
   pod 'Firebase/Auth'
+  pod 'SDWebImage'
 
   target 'twitter-cloneTests' do
     inherit! :search_paths

@@ -11,6 +11,15 @@ import UIKit
 class MainTabController: UITabBarController {
   // MARK: - Properties
 
+  var user: User? {
+    didSet {
+      guard let nav = viewControllers?.first as? UINavigationController else { return }
+      guard let feed = nav.viewControllers.first as? FeedController else { return }
+
+      feed.user = user
+    }
+  }
+
   let actionButton: UIButton = {
     let button = UIButton(type: .system)
     button.tintColor = .white
@@ -26,7 +35,7 @@ class MainTabController: UITabBarController {
   override func viewDidLoad() {
     super.viewDidLoad()
     view.backgroundColor = .twitterBlue
-    //logUserOut()
+    // logUserOut()
     authenticateUserAndConfigureUI()
   }
 
@@ -38,7 +47,10 @@ class MainTabController: UITabBarController {
   // MARK: - API
 
   func fetchUser() {
-    UserService.shared.fetchUser()
+    guard let uid = Auth.auth().currentUser?.uid else { return }
+    UserService.shared.fetchUser(uid: uid) { user in
+      self.user = user
+    }
   }
 
   func authenticateUserAndConfigureUI() {
@@ -65,7 +77,12 @@ class MainTabController: UITabBarController {
 
   // MARK: - Selectors
 
-  @objc func actionButtonTapped() {}
+  @objc func actionButtonTapped() {
+    guard let user = user else { return }
+    let nav = UINavigationController(rootViewController: UploadTweetController(user: user))
+    nav.modalPresentationStyle = .fullScreen
+    present(nav, animated: true, completion: nil)
+  }
 
   // MARK: - Helpers
 
@@ -90,7 +107,8 @@ class MainTabController: UITabBarController {
       // Fallback on earlier versions
     }
 
-    let feed = templateNavigationController(image: UIImage(named: "home_unselected"), rootViewController: FeedController())
+    let feed = templateNavigationController(image: UIImage(named: "home_unselected"),
+                                            rootViewController: FeedController(collectionViewLayout: UICollectionViewFlowLayout()))
 
     let explore = templateNavigationController(image: UIImage(named: "search_unselected"), rootViewController: ExploreController())
 
@@ -105,10 +123,9 @@ class MainTabController: UITabBarController {
     let nav = UINavigationController(rootViewController: rootViewController)
     nav.tabBarItem.image = image
     let appearance = UINavigationBarAppearance()
-    appearance.configureWithOpaqueBackground()
+    // appearance.configureWithOpaqueBackground()
     // nav.navigationBar.standardAppearance = appearance
     nav.navigationBar.scrollEdgeAppearance = appearance
-    
 
     return nav
   }
