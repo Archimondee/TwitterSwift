@@ -45,7 +45,7 @@ class LoginController: UIViewController {
     return tf
   }()
 
-  private let loginButton: UIButton = {
+  private lazy var loginButton: UIButton = {
     let button = UIButton(type: .system)
     button.setTitle("Login", for: .normal)
     button.setTitleColor(.twitterBlue, for: .normal)
@@ -58,7 +58,7 @@ class LoginController: UIViewController {
     return button
   }()
 
-  private let dontHaveAccountButton: UIButton = {
+  private lazy var dontHaveAccountButton: UIButton = {
     let button = Utilities().attributedButton("Don't have an account?", " Sign up")
     button.addTarget(self, action: #selector(handleShowSignup), for: .touchUpInside)
 

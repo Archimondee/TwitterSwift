@@ -5,6 +5,7 @@
 //  Created by Gilang Aditya Rahman on 12/04/23.
 //
 
+import Firebase
 import Foundation
 
 struct User {
@@ -13,6 +14,8 @@ struct User {
   let username: String
   var profileImageUrl: URL?
   let uid: String
+
+  var isCurrentUser: Bool { return Auth.auth().currentUser?.uid == uid }
 
   init(uid: String, dictionary: [String: AnyObject]) {
     self.uid = uid

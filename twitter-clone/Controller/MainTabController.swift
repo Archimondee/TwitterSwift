@@ -20,7 +20,7 @@ class MainTabController: UITabBarController {
     }
   }
 
-  let actionButton: UIButton = {
+  lazy var actionButton: UIButton = {
     let button = UIButton(type: .system)
     button.tintColor = .white
     button.setImage(UIImage(named: "new_tweet"), for: .normal)
@@ -125,6 +125,7 @@ class MainTabController: UITabBarController {
     let appearance = UINavigationBarAppearance()
     // appearance.configureWithOpaqueBackground()
     // nav.navigationBar.standardAppearance = appearance
+    nav.navigationBar.backgroundColor = .white
     nav.navigationBar.scrollEdgeAppearance = appearance
 
     return nav
