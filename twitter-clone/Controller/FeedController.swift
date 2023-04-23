@@ -45,6 +45,13 @@ class FeedController: UICollectionViewController {
   func fetchTweets() {
     TweetService.shared.fetchTweets { tweets in
       self.tweets = tweets
+
+      for (index, tweet) in tweets.enumerated() {
+        TweetService.shared.checkIfUserLikedTweet(tweet) { didLike in
+          guard didLike == true else { return }
+          self.tweets[index].didLike = true
+        }
+      }
     }
   }
 
@@ -88,20 +95,44 @@ extension FeedController {
     cell.tweet = tweets[indexPath.row]
     return cell
   }
+
+  override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+    let controller = TweetController(tweet: tweets[indexPath.row])
+    navigationController?.pushViewController(controller, animated: true)
+  }
 }
 
 // MARK: - UICollectionViewDelegateFlowLayout
 
 extension FeedController: UICollectionViewDelegateFlowLayout {
   func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-    return CGSize(width: view.frame.width, height: 120)
+    let viewModel = TweetViewModel(tweet: tweets[indexPath.row])
+    let height = viewModel.size(forWidth: view.frame.width).height
+    return CGSize(width: view.frame.width, height: height + 72)
   }
 }
 
 extension FeedController: TweetCellDelegate {
+  func handleLikeTapped(_ cell: TweetCell) {
+    guard let tweet = cell.tweet else { return }
+    TweetService.shared.likeTweet(tweet: tweet) { _, _ in
+      cell.tweet?.didLike.toggle()
+      let likes = tweet.didLike ? tweet.likes - 1 : tweet.likes + 1
+      cell.tweet?.likes = likes
+    }
+  }
+
   func handleProfileImageTapped(_ cell: TweetCell) {
     guard let user = cell.tweet?.user else { return }
     let viewController = ProfileController(user: user)
     navigationController?.pushViewController(viewController, animated: true)
+  }
+
+  func handleReplyTapped(_ cell: TweetCell) {
+    guard let tweet = cell.tweet else { return }
+    let controller = UploadTweetController(user: tweet.user, config: .reply(tweet))
+    let nav = UINavigationController(rootViewController: controller)
+    nav.modalPresentationStyle = .fullScreen
+    present(nav, animated: true, completion: nil)
   }
 }

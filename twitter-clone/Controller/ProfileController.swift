@@ -14,7 +14,7 @@ private let headerIdentifier = "ProfileHeader"
 class ProfileController: UICollectionViewController {
   // MARK: - Properties
 
-  private let user: User
+  private var user: User
 
   private var tweets = [Tweet]() {
     didSet { collectionView.reloadData() }
@@ -37,6 +37,8 @@ class ProfileController: UICollectionViewController {
     collectionView.backgroundColor = .white
     configureUI()
     fetchTweets()
+    checkIfUserIsFollowed()
+    fetchUserStats()
   }
 
   override func viewWillAppear(_ animated: Bool) {
@@ -51,6 +53,20 @@ class ProfileController: UICollectionViewController {
   func fetchTweets() {
     TweetService.shared.fetchTweets(forUser: user) { tweets in
       self.tweets = tweets
+    }
+  }
+
+  func checkIfUserIsFollowed() {
+    UserService.shared.checkIfUserIsFollowed(uid: user.uid) { isFollowed in
+      self.user.isFollowed = isFollowed
+      self.collectionView.reloadData()
+    }
+  }
+
+  func fetchUserStats() {
+    UserService.shared.fetchUserStats(uid: user.uid) { stats in
+      self.user.stats = stats
+      self.collectionView.reloadData()
     }
   }
 
@@ -106,9 +122,38 @@ extension ProfileController: ProfileHeaderDelegate {
 }
 
 extension ProfileController: TweetCellDelegate {
+  func handleLikeTapped(_ cell: TweetCell) {
+    print("Hellooo")
+  }
+  
+  func handleReplyTapped(_ cell: TweetCell) {
+    guard let tweet = cell.tweet else { return }
+    let controller = UploadTweetController(user: tweet.user, config: .reply(tweet))
+    let nav = UINavigationController(rootViewController: controller)
+    nav.modalPresentationStyle = .fullScreen
+    present(nav, animated: true, completion: nil)
+  }
+
   func handleProfileImageTapped(_ cell: TweetCell) {
     guard let user = cell.tweet?.user else { return }
     let viewController = ProfileController(user: user)
     navigationController?.pushViewController(viewController, animated: true)
+  }
+
+  func handleEditProfileFollow(_ header: ProfileHeader) {
+    guard user.isCurrentUser else { return }
+    if user.isFollowed {
+      UserService.shared.unfollowUser(uid: user.uid) { _, _ in
+        self.user.isFollowed = false
+        header.editProfileFollowButton.setTitle("Follow", for: .normal)
+        self.collectionView.reloadData()
+      }
+    } else {
+      UserService.shared.followUser(uid: user.uid) { _, _ in
+        self.user.isFollowed = true
+        header.editProfileFollowButton.setTitle("Following", for: .normal)
+        self.collectionView.reloadData()
+      }
+    }
   }
 }
