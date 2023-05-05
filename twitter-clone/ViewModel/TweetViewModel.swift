@@ -72,6 +72,15 @@ struct TweetViewModel {
     let imageName = tweet.didLike ? "like_filled" : "like"
     return UIImage(named: imageName)
   }
+  
+  var shouldHideReplyLabel: Bool {
+    return !tweet.isReply
+  }
+  
+  var replyText: String {
+    guard let replyingToUsername = tweet.replyingTo else { return "" }
+    return "replying to @\(replyingToUsername)"
+  }
 
   init(tweet: Tweet) {
     self.tweet = tweet

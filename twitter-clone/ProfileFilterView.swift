@@ -10,7 +10,7 @@ import UIKit
 private let reuseIdentifier = "ProfileFilterCell"
 
 protocol ProfileFilterViewDelegate: AnyObject {
-  func filterView(_ view: ProfileFilterView, didSelect indexPath: IndexPath)
+  func filterView(_ view: ProfileFilterView, didSelect index: Int)
 }
 
 class ProfileFilterView: UIView {
@@ -26,6 +26,13 @@ class ProfileFilterView: UIView {
     return cv
   }()
 
+  private let underlineView: UIView = {
+    let view = UIView()
+    view.backgroundColor = .twitterBlue
+    return view
+
+  }()
+
   override init(frame: CGRect) {
     super.init(frame: frame)
     collectionView.register(ProfileFilterCell.self, forCellWithReuseIdentifier: reuseIdentifier)
@@ -35,6 +42,11 @@ class ProfileFilterView: UIView {
 
     addSubview(collectionView)
     collectionView.addConstraintsToFillView(self)
+  }
+
+  override func layoutSubviews() {
+    addSubview(underlineView)
+    underlineView.anchor(left: leftAnchor, bottom: bottomAnchor, width: frame.width / 3, height: 2)
   }
 
   @available(*, unavailable)
@@ -70,6 +82,11 @@ extension ProfileFilterView: UICollectionViewDelegateFlowLayout {
 
 extension ProfileFilterView: UICollectionViewDelegate {
   func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-    delegate?.filterView(self, didSelect: indexPath)
+    let cell = collectionView.cellForItem(at: indexPath)
+    let xPosition = cell?.frame.origin.x ?? 0
+    UIView.animate(withDuration: 0.3) {
+      self.underlineView.frame.origin.x = xPosition
+    }
+    delegate?.filterView(self, didSelect: indexPath.row)
   }
 }

@@ -11,6 +11,7 @@ import UIKit
 protocol ProfileHeaderDelegate: AnyObject {
   func handleDismissal()
   func handleEditProfileFollow(_ header: ProfileHeader)
+  func didSelect(filter: ProfileFilterOptions)
 }
 
 class ProfileHeader: UICollectionReusableView {
@@ -86,12 +87,7 @@ class ProfileHeader: UICollectionReusableView {
 
   private let filterBar = ProfileFilterView()
 
-  private let underlineView: UIView = {
-    let view = UIView()
-    view.backgroundColor = .twitterBlue
-    return view
-
-  }()
+  
 
   private let underlineViewGray: UIView = {
     let view = UIView()
@@ -159,8 +155,7 @@ class ProfileHeader: UICollectionReusableView {
     addSubview(underlineViewGray)
     underlineViewGray.anchor(left: leftAnchor, bottom: bottomAnchor, width: frame.width, height: 0.5)
 
-    addSubview(underlineView)
-    underlineView.anchor(left: leftAnchor, bottom: bottomAnchor, width: frame.width / 3, height: 2)
+    
   }
 
   @available(*, unavailable)
@@ -195,13 +190,8 @@ class ProfileHeader: UICollectionReusableView {
 }
 
 extension ProfileHeader: ProfileFilterViewDelegate {
-  func filterView(_ view: ProfileFilterView, didSelect indexPath: IndexPath) {
-    guard let cell = view.collectionView.cellForItem(at: indexPath) as? ProfileFilterCell else {
-      return
-    }
-    let xPosition = cell.frame.origin.x
-    UIView.animate(withDuration: 0.3) {
-      self.underlineView.frame.origin.x = xPosition
-    }
+  func filterView(_ view: ProfileFilterView, didSelect index: Int) {
+    guard let filter = ProfileFilterOptions(rawValue: index) else { return }
+    delegate?.didSelect(filter: filter)
   }
 }

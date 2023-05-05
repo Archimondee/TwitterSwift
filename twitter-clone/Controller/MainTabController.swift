@@ -8,8 +8,15 @@
 import Firebase
 import UIKit
 
+enum ActionButtonConfiguration {
+  case tweet
+  case message
+}
+
 class MainTabController: UITabBarController {
   // MARK: - Properties
+
+  private var buttonConfig: ActionButtonConfiguration = .tweet
 
   var user: User? {
     didSet {
@@ -78,8 +85,17 @@ class MainTabController: UITabBarController {
   // MARK: - Selectors
 
   @objc func actionButtonTapped() {
+    let controller: UIViewController
+
+    switch buttonConfig {
+    case .tweet:
+      guard let user = user else { return }
+      controller = UploadTweetController(user: user, config: .tweet)
+    case .message:
+      controller = ExploreController()
+    }
     guard let user = user else { return }
-    let nav = UINavigationController(rootViewController: UploadTweetController(user: user, config: .tweet))
+    let nav = UINavigationController(rootViewController: controller)
     nav.modalPresentationStyle = .fullScreen
     present(nav, animated: true, completion: nil)
   }
@@ -92,6 +108,7 @@ class MainTabController: UITabBarController {
                         paddingBottom: 64, paddingRight: 16, width: 56, height: 56)
 
     actionButton.layer.cornerRadius = 56 / 2
+    delegate = self
   }
 
   func configureViewController() {
@@ -129,5 +146,16 @@ class MainTabController: UITabBarController {
     nav.navigationBar.scrollEdgeAppearance = appearance
 
     return nav
+  }
+}
+
+extension MainTabController: UITabBarControllerDelegate {
+  func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
+    let index = viewControllers?.firstIndex(of: viewController)
+    let imageName = index == 3 ? "mail" : "new_tweet"
+    actionButton.setImage(UIImage(named: imageName), for: .normal)
+    buttonConfig = index == 3 ? .message : .tweet
+    if index == 3 {
+    } else {}
   }
 }

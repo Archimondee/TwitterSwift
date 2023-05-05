@@ -37,7 +37,13 @@ class TweetController: UICollectionViewController {
     super.viewDidLoad()
     configureCollectionView()
     fetchReplies()
-    print("Helloo \(tweet.caption)")
+  }
+
+  override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+
+    navigationController?.navigationBar.barStyle = .default
+    navigationController?.isNavigationBarHidden = false
   }
 
   // MARK: - API
@@ -114,6 +120,14 @@ extension TweetController: TweetHeaderDelegate {
         self.actionSheetLauncher.delegate = self
         self.actionSheetLauncher.show()
       }
+    }
+  }
+
+  func handleFetchUser(withUsername username: String) {
+    UserService.shared.fetchUser(withUsername: username) { user in
+      print("Debug : user is \(user.username)")
+      let controller = ProfileController(user: user)
+      self.navigationController?.pushViewController(controller, animated: true)
     }
   }
 }
